@@ -1,13 +1,17 @@
-import { Game, GamePhase, Card, Player } from './models';
+import { Game, GamePhase, Card, Player, Keyword } from './models';
 
 // entry point
 export function runGame(game: Game) {
+  log(game, 'game starting');
+
   while (game.phase != GamePhase.End) {
     switch (game.phase) {
       case GamePhase.Assembly:
+        log(game, 'assembly phase', Keyword.Assembly);
         handleAssemblyPhase(game);
         break;
       case GamePhase.Seasons:
+        log(game, 'seasons phase');
         handleSeasonsPhase(game);
         break;
     }
@@ -15,7 +19,10 @@ export function runGame(game: Game) {
     game.round++;
   }
 
-  console.log('Game over!', game);
+  log(game, 'Game over!');
+  let logs: any[] = [];
+  game.log.items.forEach((i) => logs.push(i));
+  console.table('Game Log', logs);
 }
 
 function handleAssemblyPhase(game: Game) {
@@ -88,7 +95,6 @@ function draftCards(game: Game) {
     };
   });
 
-  console.log('Draft complete.');
   game.players.items.forEach((p) => {
     console.log(
       `${p.name}'s hand:`,
@@ -100,4 +106,13 @@ function draftCards(game: Game) {
 function takeTurn(game: Game, player: Player) {
   // Check for new clashes, game events, victory triggers, etc.
   // Maybe break to Assembly if someone claims victory mid-round
+}
+
+function log(game: Game, message: string, keyword: string = '') {
+  game.log.items.push({
+    round: game.round,
+    phase: keyword,
+    description: message,
+    timestamp: new Date(),
+  });
 }

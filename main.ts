@@ -30,8 +30,8 @@ const dummyGame = {
   log: { items: [], find: () => null },
 };
 
-console.log('Starting game loop...');
 runGame(dummyGame as any);
+renderLog(dummyGame as any);
 
 // helpers
 
@@ -53,7 +53,6 @@ function generateSampleDeck(): Collection<Card> {
 }
 
 function createDummyPlayers(): Collection<Player> {
-  console.log('creating dummy players...');
   const colors = [Color.White, Color.Orange, Color.Green];
   const players: Player[] = colors.map((color, i) => ({
     id: i.toString(),
@@ -72,12 +71,18 @@ function createDummyPlayers(): Collection<Player> {
   };
 }
 
-// TODO save for later when implementing logs
-function logPhase(game: Game, keyword: Keyword, message: string) {
-  game.log.items.push({
-    round: game.round,
-    phase: keyword,
-    description: message,
-    timestamp: new Date(),
+function renderLog(game: Game) {
+  const logDiv = document.createElement('div');
+  logDiv.innerHTML = `<h2>Game Log</h2>`;
+
+  const ul = document.createElement('ul');
+
+  game.log.items.forEach((entry) => {
+    const li = document.createElement('li');
+    li.textContent = `[Round ${entry.round}] ${entry.description}`;
+    ul.appendChild(li);
   });
+
+  logDiv.appendChild(ul);
+  document.body.appendChild(logDiv);
 }
