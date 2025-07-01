@@ -20,7 +20,7 @@ type Game = {
   log: Collection<GameLogEntry>;
 };
 
-type PlayerId = number;
+type PlayerId = string;
 
 type Player = {
   id: PlayerId;
@@ -138,6 +138,11 @@ export function runGame(game: Game) {
     game.round++;
   }
 
+  const deck = generateSampleDeck();
+  const players = createDummyPlayers();
+
+  console.log({ deck, players });
+
   console.log('Game over!');
 }
 
@@ -179,4 +184,41 @@ function draftCards(game: Game) {}
 function takeTurn(game: Game, player: Player) {
   // Check for new clashes, game events, victory triggers, etc.
   // Maybe break to Assembly if someone claims victory mid-round
+}
+
+function generateSampleDeck(): Collection<Card> {
+  const sampleCards: Card[] = Array.from({ length: 12 }, (_, i) => ({
+    id: `card${i + 1}`,
+    name: `Card ${i + 1}`,
+    type: 'action',
+    description: `Effect of card ${i + 1}`,
+    effect: (game, playerId) => {
+      console.log(`Card ${i + 1} played by Player ${playerId}`);
+    },
+  }));
+
+  return {
+    items: sampleCards,
+    find: (id) => sampleCards.find((c) => c.id === id) || null,
+  };
+}
+
+function createDummyPlayers(): Collection<Player> {
+  console.log('creating dummy players...');
+  const colors = [Color.White, Color.Orange, Color.Green];
+  const players: Player[] = colors.map((color, i) => ({
+    id: i.toString(),
+    name: `Player ${i + 1}`,
+    color,
+    clans: { items: [], find: () => null },
+    hand: { items: [], find: () => null },
+    epicTales: [],
+    deeds: { items: [], find: () => null },
+    passed: false,
+  }));
+
+  return {
+    items: players,
+    find: (id) => players.find((p) => p.id === id) || null,
+  };
 }
