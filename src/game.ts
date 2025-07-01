@@ -11,18 +11,15 @@ export function runGame(game: Game) {
         handleAssemblyPhase(game);
         break;
       case GamePhase.Seasons:
-        log(game, 'seasons phase');
+        log(game, 'seasons phase', Keyword.Seasons);
         handleSeasonsPhase(game);
+        game.round++;
+        log(game, 'NEXT ROUND');
         break;
     }
-
-    game.round++;
   }
 
   log(game, 'Game over!');
-  let logs: any[] = [];
-  game.log.items.forEach((i) => logs.push(i));
-  console.table('Game Log', logs);
 }
 
 function handleAssemblyPhase(game: Game) {
@@ -33,28 +30,30 @@ function handleAssemblyPhase(game: Game) {
     return;
   }
 
-  assignBrenn(game);
+  // assignBrenn(game);
 
-  game.subPhase = 'drafting';
-  draftCards(game);
+  // draftCards(game);
+
+  game.phase = GamePhase.Seasons;
 }
+
 function handleSeasonsPhase(game: Game) {
   game.subPhase = 'action';
 
   const activePlayers = game.players.items.filter((p) => !p.passed);
 
-  while (activePlayers.some((p) => !p.passed)) {
-    for (const player of activePlayers) {
-      if (player.passed) continue;
-      takeTurn(game, player);
-    }
-  }
+  // while (activePlayers.some((p) => !p.passed)) {
+  //   for (const player of activePlayers) {
+  //     if (player.passed) continue;
+  //     takeTurn(game, player);
+  //   }
+  // }
 
   game.phase = GamePhase.Assembly; // Next round
 }
 
 function checkVictoryConditions(game: Game): boolean {
-  if (game.round == 2) {
+  if (game.round >= 3) {
     return true;
   }
   return false;
@@ -93,13 +92,6 @@ function draftCards(game: Game) {
       items: picked[i],
       find: (id) => picked[i].find((c) => c.id === id) || null,
     };
-  });
-
-  game.players.items.forEach((p) => {
-    console.log(
-      `${p.name}'s hand:`,
-      p.hand.items.map((c) => c.name)
-    );
   });
 }
 
