@@ -124,7 +124,7 @@ type Collection<T> = {
   byId?: Record<string, T>; // optional lazy generated
 };
 
-function runGame(game: Game) {
+export function runGame(game: Game) {
   while (game.phase != GamePhase.End) {
     switch (game.phase) {
       case GamePhase.Assembly:
