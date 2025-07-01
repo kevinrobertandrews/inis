@@ -1,0 +1,19 @@
+{
+  "name": "ts-start",
+  "version": "1.0.0",
+  "main": "ts-start.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
+  },
+  "bin": {
+    "ts-start": "./ts-start.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
