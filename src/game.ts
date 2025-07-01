@@ -1,129 +1,6 @@
-type Game = {
-  phase: GamePhase;
-  subPhase: 'check_win_conditions' | 'drafting' | 'action';
-  round: number;
-  brennId: PlayerId | null;
+import { Game, GamePhase, Card, Player } from './models';
 
-  players: Collection<Player>;
-  territories: Collection<Territory>;
-  draftedHands: Record<PlayerId, Collection<Card>>; // hidden info
-  discardedCards: Collection<Card>;
-  deck: Collection<Card>;
-
-  epicTales: Collection<Card>;
-  deeds: Collection<Deed>;
-
-  victoryClaims: Collection<VictoryClaim>; // tracks who has claimed victory conditions
-  pendingChallenges: Collection<Clash>; // holds any unresolved conflicts or ties
-
-  map: MapState;
-  log: Collection<GameLogEntry>;
-};
-
-type PlayerId = string;
-
-type Player = {
-  id: PlayerId;
-  name: string;
-  color: Color;
-  clans: Collection<Clan>; // current locations on map
-  hand: Collection<Card>;
-  epicTales: Collection<Card>[];
-  deeds: Collection<Deed>;
-  passed: boolean;
-};
-
-type Clan = {
-  ownerId: PlayerId;
-  location: TerritoryId;
-};
-
-type Territory = {
-  id: TerritoryId;
-  name: string;
-  neighbors: Collection<TerritoryId>;
-  sanctuaries: number;
-  citadel: boolean;
-  clans: Collection<Clan>;
-};
-
-type TerritoryId = string;
-
-type Card = {
-  id: string;
-  name: string;
-  type: 'action' | 'territory' | 'epicTale';
-  description: string;
-  effect: (game: Game, playerId: PlayerId) => void;
-};
-
-type Deed = {
-  id: string;
-  name: string;
-  requirement: (game: Game, playerId: PlayerId) => boolean;
-};
-
-type VictoryClaim = {
-  playerId: PlayerId;
-  condition: WinCondition;
-  valid: boolean;
-};
-
-type Clash = {
-  instigator: PlayerId;
-  defenders: Collection<PlayerId>;
-  territory: TerritoryId;
-  state: 'citadels_step' | 'pending' | 'resolved';
-  resolution?: 'retreat' | 'discardCard' | 'removeClan';
-};
-
-type MapState = {
-  explored: Collection<TerritoryId>;
-  unexplored: Collection<TerritoryId>;
-};
-
-type GameLogEntry = {
-  round: number;
-  phase: string;
-  description: string;
-  timestamp: Date;
-};
-
-// -- Enums --
-
-enum Color {
-  White = 'white',
-  Orange = 'orange',
-  Green = 'green',
-  Blue = 'blue',
-}
-
-enum WinCondition {
-  Military = 'military_win_condition', // chieftan over cumulative six opposing clans
-  Cultural = 'cultural_win_condition', // present with cumulative six sanctuaries
-  Exploration = 'exploration_win_condition', // present in six territories
-}
-
-enum GamePhase {
-  Assembly = 'assembly',
-  Seasons = 'seasons',
-  End = 'end',
-}
-
-enum Keyword {
-  Assembly = 'Assembly',
-  Seasons = 'Seasons',
-  // game keywords live in ONE place!
-}
-
-// -- Utilities --
-
-type Collection<T> = {
-  items: T[];
-  find: (id: string) => T | null;
-  byId?: Record<string, T>; // optional lazy generated
-};
-
+// entry point
 export function runGame(game: Game) {
   while (game.phase != GamePhase.End) {
     switch (game.phase) {
@@ -138,12 +15,7 @@ export function runGame(game: Game) {
     game.round++;
   }
 
-  const deck = generateSampleDeck();
-  const players = createDummyPlayers();
-
-  console.log({ deck, players });
-
-  console.log('Game over!');
+  console.log('Game over!', game);
 }
 
 function handleAssemblyPhase(game: Game) {
@@ -155,8 +27,9 @@ function handleAssemblyPhase(game: Game) {
   }
 
   assignBrenn(game);
-  draftCards(game);
+
   game.subPhase = 'drafting';
+  draftCards(game);
 }
 function handleSeasonsPhase(game: Game) {
   game.subPhase = 'action';
@@ -174,51 +47,57 @@ function handleSeasonsPhase(game: Game) {
 }
 
 function checkVictoryConditions(game: Game): boolean {
-  return true;
+  if (game.round == 2) {
+    return true;
+  }
+  return false;
 }
 
 function assignBrenn(game: Game) {}
 
-function draftCards(game: Game) {}
+function draftCards(game: Game) {
+  const numPlayers = game.players.items.length;
+  const handSize = 4;
+
+  // Step 1: Deal hands
+  let hands: Card[][] = [];
+  for (let i = 0; i < numPlayers; i++) {
+    const hand = game.deck.items.splice(0, handSize);
+    hands.push(hand);
+  }
+
+  // Step 2: Draft (pick one, pass left)
+  const picked: Card[][] = Array.from({ length: numPlayers }, () => []);
+
+  for (let round = 0; round < handSize; round++) {
+    for (let i = 0; i < numPlayers; i++) {
+      const currentHand = hands[i];
+      const chosen = currentHand.shift(); // Simulate a choice
+      if (chosen) picked[i].push(chosen);
+    }
+
+    // Rotate hands to the left
+    hands = hands.map((_, i) => hands[(i + 1) % numPlayers]);
+  }
+
+  // Step 3: Assign final hands
+  game.players.items.forEach((p, i) => {
+    p.hand = {
+      items: picked[i],
+      find: (id) => picked[i].find((c) => c.id === id) || null,
+    };
+  });
+
+  console.log('Draft complete.');
+  game.players.items.forEach((p) => {
+    console.log(
+      `${p.name}'s hand:`,
+      p.hand.items.map((c) => c.name)
+    );
+  });
+}
 
 function takeTurn(game: Game, player: Player) {
   // Check for new clashes, game events, victory triggers, etc.
   // Maybe break to Assembly if someone claims victory mid-round
-}
-
-function generateSampleDeck(): Collection<Card> {
-  const sampleCards: Card[] = Array.from({ length: 12 }, (_, i) => ({
-    id: `card${i + 1}`,
-    name: `Card ${i + 1}`,
-    type: 'action',
-    description: `Effect of card ${i + 1}`,
-    effect: (game, playerId) => {
-      console.log(`Card ${i + 1} played by Player ${playerId}`);
-    },
-  }));
-
-  return {
-    items: sampleCards,
-    find: (id) => sampleCards.find((c) => c.id === id) || null,
-  };
-}
-
-function createDummyPlayers(): Collection<Player> {
-  console.log('creating dummy players...');
-  const colors = [Color.White, Color.Orange, Color.Green];
-  const players: Player[] = colors.map((color, i) => ({
-    id: i.toString(),
-    name: `Player ${i + 1}`,
-    color,
-    clans: { items: [], find: () => null },
-    hand: { items: [], find: () => null },
-    epicTales: [],
-    deeds: { items: [], find: () => null },
-    passed: false,
-  }));
-
-  return {
-    items: players,
-    find: (id) => players.find((p) => p.id === id) || null,
-  };
 }
