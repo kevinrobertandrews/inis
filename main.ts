@@ -13,7 +13,7 @@ import {
 const dummyGame = {
   phase: 'assembly',
   subPhase: 'check_win_conditions',
-  round: 1,
+  round: 0,
   brennId: null,
   players: createDummyPlayers(),
   territories: { items: [], find: () => null },
@@ -79,8 +79,17 @@ function renderLog(game: Game) {
   const ul = document.createElement('ul');
 
   game.log.items.forEach((entry) => {
+    let roundLabel = '';
+
     const li = document.createElement('li');
-    li.textContent = `[Round ${entry.round}] ${entry.description}`;
+
+    if (entry.round == 0) {
+      roundLabel = 'Setup';
+    } else {
+      roundLabel = `Round ${entry.round}`;
+    }
+
+    li.textContent = `[${roundLabel}] ${entry.description}`;
     ul.appendChild(li);
   });
 
