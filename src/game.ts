@@ -1,8 +1,18 @@
-import { Game, GamePhase, Card, Player, Keyword } from './models';
+import {
+  Game,
+  GamePhase,
+  Card,
+  Player,
+  Keyword,
+  Clan,
+  Territory,
+  Collection,
+} from './models';
 
 // entry point
 export function runGame(game: Game) {
   log(game, 'game starting');
+  setupGame(game);
 
   while (game.phase != GamePhase.End) {
     switch (game.phase) {
@@ -100,7 +110,7 @@ function takeTurn(game: Game, player: Player) {
   // Maybe break to Assembly if someone claims victory mid-round
 }
 
-function log(game: Game, message: string, keyword: string = '') {
+export function log(game: Game, message: string, keyword: string = '') {
   game.log.items.push({
     round: game.round,
     phase: keyword,
@@ -108,3 +118,62 @@ function log(game: Game, message: string, keyword: string = '') {
     timestamp: new Date(),
   });
 }
+
+function setupGame(game: Game) {
+  console.log('setting game up...');
+  // layoutStartingTerritories(game);
+  // placeStartingClans(game);
+  // assignBrenn(game);
+}
+
+// function layoutStartingTerritories(game: Game) {
+//   const numPlayers = game.players.items.length;
+
+//   const territoryPool = createTerritoryPool(); // helper we'll define
+//   const startingTerritories = territoryPool.splice(0, numPlayers);
+
+//   game.map.explored = {
+//     items: startingTerritories,
+//     find: (id) => startingTerritories.find((t) => t.id === id) || null,
+//   };
+
+//   game.territories = {
+//     items: startingTerritories,
+//     find: (id) => startingTerritories.find((t) => t.id === id) || null,
+//   };
+
+//   log(game, `Laid out ${numPlayers} starting territories`);
+// }
+
+// function placeStartingClans(game: Game) {
+//   const players = game.players.items;
+//   const territories = game.map.explored.items;
+
+//   for (let round = 0; round < 2; round++) {
+//     for (const player of players) {
+//       const target =
+//         territories[Math.floor(Math.random() * territories.length)];
+
+//       const clan: Clan = {
+//         ownerId: player.id,
+//         location: target.id,
+//       };
+
+//       player.clans.items.push(clan);
+//       target.clans.items.push(clan);
+
+//       log(game, `${player.name} places a clan in ${target.name}`);
+//     }
+//   }
+// }
+
+// function createTerritoryPool(): Collection<Territory> {
+//   return Array.from({ length: 12 }, (_, i) => ({
+//     id: `territory${i + 1}`,
+//     name: `Territory ${i + 1}`,
+//     neighbors: { items: [], find: () => null },
+//     sanctuaries: 0,
+//     citadel: false,
+//     clans: { items: [], find: () => null },
+//   }));
+// }

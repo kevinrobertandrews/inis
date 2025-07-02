@@ -52,7 +52,7 @@ export type TerritoryId = string;
 export type Card = {
   id: string;
   name: string;
-  type: 'action' | 'territory' | 'epicTale';
+  type: CardType;
   description: string;
   effect: (game: Game, playerId: PlayerId) => void;
 };
@@ -114,6 +114,12 @@ export enum Keyword {
   Assembly = 'Assembly',
   Seasons = 'Seasons',
   // game keywords live in ONE place!
+}
+
+export enum CardType {
+  Action = 'Card.Action',
+  Territory = 'Card.Territory',
+  Epic = 'Card.EpicTale',
 }
 
 // -- Utilities --

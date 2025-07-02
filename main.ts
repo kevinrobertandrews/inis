@@ -6,6 +6,7 @@ import {
   Color,
   Game,
   Keyword,
+  CardType,
 } from './src/models.ts';
 
 // Create a dummy game object for now
@@ -39,7 +40,7 @@ function generateSampleDeck(): Collection<Card> {
   const sampleCards: Card[] = Array.from({ length: 12 }, (_, i) => ({
     id: `card${i + 1}`,
     name: `Card ${i + 1}`,
-    type: 'action',
+    type: CardType.Action,
     description: `Effect of card ${i + 1}`,
     effect: (game, playerId) => {
       console.log(`Card ${i + 1} played by Player ${playerId}`);
